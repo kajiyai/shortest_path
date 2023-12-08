@@ -15,6 +15,7 @@ end
 
 # 最小のコストを確定させるにはソートをする必要はなく、minのみを求める
 # 最小のコストを正しい順番で調べていくにはキューを使用する
+# カレントノードは直近で決定したノードとする
 
 class Node(start, goal) # ([],[]) 
     def initialize
@@ -31,21 +32,29 @@ class Node(start, goal) # ([],[])
         x = [-1,1,0,0]
         y = [0,0,-1,1]
 
-        left = [x[0],y[0]]
-        right = [x[1],y[1]]
-        down = [x[2],y[2]]
-        up = [x[3], y[3]]
+        left = [@current[0]+x[0],@current[0]+y[0]]
+        right = [@current[1]+x[1],@current[1]+y[1]]
+        down = [@current[2]+x[2],@current[2]+y[2]]
+        up = [@current[3]+x[3], @current[3]+y[3]]
 
         # @current + left...
 
-        # TOOD: 前後左右のコストを計算する
+        return [left,right,down,up].map {|node| calc_cost(node)}
     end
 
-    # マスのコストを算出する
-    def calc_cost
-        (@goal[0]-@current[0]).abs + (@goal[1]-@current[1]).abs # ゴールとの距離を返す
+    # マスのコストを算出する node []
+    def calc_cost(node)
+        (@goal[0]-node[0]).abs + (@goal[1]-node[1]).abs # ゴールとの距離を返す
     end
 
     # @queueを適切に使用し、@currentを適切な場所に移動させる
+    def move_current
+    end
+
+    # 直近で計算した隣接ノードのコストを比較し、必要であれば更新する
+    def update_cost(node)
+        prev = #場所.cost
+    end
+        
 end
 
