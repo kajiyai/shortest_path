@@ -1,38 +1,6 @@
 require 'graphviz'
 require 'fileutils'
 
-inputs = [
-  # 入力例1
-  "3 3\nS..\n...\n..G",
-
-  # 入力例2
-  "4 4\n....\n.S..\n....\n..G.",
-
-  # 入力例3
-  "5 3\nS..\n...\n...\n...\n..G",
-
-  # 入力例4
-  "3 5\nS....\n.....\n....G",
-
-  # 入力例5
-  "6 6\n......\n....G.\n......\n......\n...S..\n......",
-
-  # 入力例6
-  "2 5\n..S..\n...G.",
-
-  # 入力例7
-  "4 4\n...S\n....\n....\nG...",
-
-  # 入力例8
-  "6 3\n..S\n...\nG..\n...\n...\n...",
-
-  # 入力例9
-  "5 7\n...S...\n.......\n.......\n....G..\n.......",
-
-  # 入力例10
-  "3 10\nG.........\n..........\n.........S"
-]
-
 
 # ダイクストラ法
 # 初期値 スタート:0, それ以外: infinite
@@ -152,6 +120,23 @@ def parse_input(input)
 
   [start, goal, grid_size_x, grid_size_y]
 end
+
+# 入力ファイルから入力を読み込む関数
+def load_inputs(input_dir)
+  inputs = []
+  # 指定ディレクトリ内のすべてのinput*.txtファイルを読み込む
+  Dir.glob(File.join(input_dir, 'input*.txt')).sort.each do |file_path|
+    input = File.read(file_path)
+    inputs << input
+  end
+  inputs
+end
+
+# 入力ディレクトリの指定
+input_dir = 'inputs'
+
+# 入力を読み込む
+inputs = load_inputs(input_dir)
 
 # 入力解析とインスタンス生成、経路探索の実行
 inputs.each_with_index do |input, index|
