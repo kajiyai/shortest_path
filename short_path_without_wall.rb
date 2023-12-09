@@ -33,6 +33,10 @@ class Node
         self.current = queue.shift # キューからノードを取り出す
         return cost[current] if current == goal # ゴールに到達した場合
   
+        puts "現在のノード: #{current}"
+        puts "現在のキュー: #{queue}"
+        puts "各ノードへのコスト: #{cost}"
+  
         access_adjacent(current).each do |adj_node|
           next_cost = cost[current] + 1 # 隣接ノードへの移動コストを1とする
           if next_cost < cost[adj_node]
