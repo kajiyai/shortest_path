@@ -17,44 +17,50 @@ end
 # 最小のコストを正しい順番で調べていくにはキューを使用する
 # カレントノードは直近で決定したノードとする
 
-class Node(start, goal) # ([],[]) 
-    def initialize
-        @cost = 0
-        @current = start
-        @status = "S"
-        @queue = []
-        @goal = goal
+class Node
+    attr_accessor :cost, :current, :queue, :goal
+  
+    def initialize(start, goal)
+      @cost = Hash.new(Float::INFINITY) # 各ノードへのコストを無限大で初期化
+      @current = start
+      @goal = goal
+      @queue = [start] # スタート位置をキューに追加
+      @cost[start] = 0 # スタート位置のコストは0
     end
-
-
-    # 前後左右の隣接するマスのコストの配列を返す
-    def access_adjacent
-        x = [-1,1,0,0]
-        y = [0,0,-1,1]
-
-        left = [@current[0]+x[0],@current[0]+y[0]]
-        right = [@current[1]+x[1],@current[1]+y[1]]
-        down = [@current[2]+x[2],@current[2]+y[2]]
-        up = [@current[3]+x[3], @current[3]+y[3]]
-
-        # @current + left...
-
-        return [left,right,down,up].map {|node| calc_cost(node)}
+  
+    def find_path
+      until queue.empty?
+        self.current = queue.shift # キューからノードを取り出す
+        return cost[current] if current == goal # ゴールに到達した場合
+  
+        access_adjacent(current).each do |adj_node|
+          next_cost = cost[current] + 1 # 隣接ノードへの移動コストを1とする
+          if next_cost < cost[adj_node]
+            cost[adj_node] = next_cost
+            queue.push(adj_node)
+          end
+        end
+      end
+      cost[goal]
     end
-
-    # マスのコストを算出する node []
-    def calc_cost(node)
-        (@goal[0]-node[0]).abs + (@goal[1]-node[1]).abs # ゴールとの距離を返す
+  
+    private
+  
+    def access_adjacent(node)
+      x, y = node
+      [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].select { |nx, ny| valid_node?(nx, ny) }
     end
-
-    # @queueを適切に使用し、@currentを適切な場所に移動させる
-    def move_current
+  
+    def valid_node?(x, y)
+      x >= 0 && y >= 0 # 有効なノードの条件
     end
-
-    # 直近で計算した隣接ノードのコストを比較し、必要であれば更新する
-    def update_cost(node)
-        prev = #場所.cost
-    end
-        
-end
-
+  end
+  
+  # スタートとゴールの位置設定
+  start = [0, 0] # スタート位置
+  goal = [2, 2]  # ゴール位置
+  
+  # インスタンス化と経路探索
+  node = Node.new(start, goal)
+  puts "最短コスト: #{node.find_path}"
+  
