@@ -1,10 +1,12 @@
 require 'graphviz'
+require 'fileutils'
+
 inputs = [
   # 入力例1
   "3 3\nS..\n...\n..G",
 
   # 入力例2
-  "4 4\nS...\n....\n....\n...G",
+  "4 4\n....\n.S..\n....\n..G.",
 
   # 入力例3
   "5 3\nS..\n...\n...\n...\n..G",
@@ -13,10 +15,10 @@ inputs = [
   "3 5\nS....\n.....\n....G",
 
   # 入力例5
-  "6 6\nS.....\n......\n......\n......\n......\n.....G",
+  "6 6\n......\n....G.\n......\n......\n...S..\n......",
 
   # 入力例6
-  "2 5\nS....\n...G.",
+  "2 5\n..S..\n...G.",
 
   # 入力例7
   "4 4\n...S\n....\n....\nG...",
@@ -25,7 +27,7 @@ inputs = [
   "6 3\n..S\n...\nG..\n...\n...\n...",
 
   # 入力例9
-  "5 7\n......S\n.......\n.......\n.......\nG......",
+  "5 7\n...S...\n.......\n.......\n....G..\n.......",
 
   # 入力例10
   "3 10\nG.........\n..........\n.........S"
@@ -44,7 +46,7 @@ inputs = [
 # カレントノードは直近で決定したノードとする
 
 class Node
-  attr_accessor :cost, :current, :queue, :goal
+  attr_accessor :cost, :current, :queue, :goal, :graph
 
   def initialize(start, goal, grid_size_x, grid_size_y)
     @grid_size_x = grid_size_x
@@ -54,36 +56,49 @@ class Node
     @goal = goal
     @queue = [start]
     @cost[start] = 0
+    @graph = GraphViz.new(:G, type: :digraph) # Graphvizのグラフを初期化
   end
 
-  def find_path
-    g = GraphViz.new(:G, type: :digraph) # Graphvizのグラフを初期化
+  def find_path(input_index)
+    step_index = 0
+    output_dir = "output_#{input_index + 1}"
+    FileUtils.mkdir_p(output_dir) unless Dir.exist?(output_dir)
 
     until queue.empty?
       self.current = queue.shift
-
       display_grid # コンソールへの出力
-
       return cost[current] if current == goal
 
       access_adjacent(current).each do |adj_node|
         next_cost = cost[current] + 1
-        if next_cost < cost[adj_node]
-          cost[adj_node] = next_cost
-          queue.push(adj_node) unless queue.include?(adj_node)
+        next unless next_cost < cost[adj_node]
 
-          # Graphvizでのノードとエッジの追加
-          g.add_nodes(current.to_s, label: "C(#{current})")
-          g.add_nodes(adj_node.to_s, label: "#{adj_node}(#{cost[adj_node]})")
-          g.add_edges(current.to_s, adj_node.to_s)
-        end
+        cost[adj_node] = next_cost
+        queue.push(adj_node) unless queue.include?(adj_node)
+        update_graph(current, adj_node) # グラフを更新
       end
+
+      output_graph(input_index, step_index, output_dir) # グラフを出力
+      step_index += 1
     end
 
-    g.output(png: "graph_#{index}.png") # グラフをPNG形式で出力
+    output_graph(input_index, step_index, output_dir) # 最終グラフを出力
     cost[goal]
-  end  
-  private
+  end
+
+  def update_graph(current, adj_node)
+    graph.add_nodes(current.to_s, label: "C(#{current})")
+    graph.add_nodes(adj_node.to_s, label: "#{adj_node}(#{cost[adj_node]})")
+    graph.add_edges(current.to_s, adj_node.to_s)
+  end
+
+  def output_graph(input_index, step_index, output_dir)
+    filename = File.join(output_dir, "graph_#{input_index + 1}_#{step_index + 1}.png")
+    graph.output(png: filename)
+    puts "グラフを #{filename} に出力しました。"
+  rescue StandardError => e
+    puts "グラフの出力に失敗しました: #{e.message}"
+  end
 
   def display_grid
     puts "\nグリッドの状態:"
@@ -139,11 +154,10 @@ def parse_input(input)
 end
 
 # 入力解析とインスタンス生成、経路探索の実行
-inputs.each_with_index do |input, _index|
+inputs.each_with_index do |input, index|
   start, goal, grid_size_x, grid_size_y = parse_input(input)
-
   node = Node.new(start, goal, grid_size_x, grid_size_y)
   puts "入力: #{input.split("\n").first}"
-  puts "最短コスト: #{node.find_path}"
+  puts "最短コスト: #{node.find_path(index)}"
   puts '-' * 30
 end
