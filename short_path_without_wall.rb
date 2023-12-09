@@ -29,7 +29,7 @@ class Node
 
   def find_path(input_index)
     step_index = 0
-    output_dir = "output_#{input_index + 1}"
+    output_dir = "outputs/output#{input_index + 1}"
     FileUtils.mkdir_p(output_dir) unless Dir.exist?(output_dir)
 
     until queue.empty?
@@ -61,7 +61,7 @@ class Node
   end
 
   def output_graph(input_index, step_index, output_dir)
-    filename = File.join(output_dir, "graph_#{input_index + 1}_#{step_index + 1}.png")
+    filename = File.join(output_dir, "graph#{input_index + 1}_#{step_index + 1}.png")
     graph.output(png: filename)
     puts "グラフを #{filename} に出力しました。"
   rescue StandardError => e
